@@ -1,7 +1,9 @@
-
 export function addSpaces(input: string, totalLength: number) {
 
-  const inputLength = input.length
+  let inputLength = input.length
+  if (input.includes('\x1b[31m')) {
+    inputLength -= 9
+  }
 
   let output: string = ""
 
@@ -13,3 +15,4 @@ export function addSpaces(input: string, totalLength: number) {
 
 }
 
+// name: "\x1b[31mDRIVER\x1b[0m",

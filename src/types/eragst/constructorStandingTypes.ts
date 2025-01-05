@@ -5,7 +5,7 @@ interface Constructor {
   nationality: string
 }
 
-interface ConstructorStanding {
+export interface ConstructorStanding {
   "position": string,
   "positionText": string,
   "points": string,
