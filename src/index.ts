@@ -1,56 +1,48 @@
 import { Hono } from 'hono'
-import { book } from './routes/books'
+import { ConstructorStanding_Response } from './types/eragst/constructorStandingTypes'
+import { formatRow, separator } from './utils/formatter';
 
-const app = new Hono<{ Bindings: CloudflareBindings }>().basePath('/api')
+const app = new Hono<{ Bindings: CloudflareBindings }>()
 
-interface Constructor {
-  name: string,
-  points: string,
-  position: string
-}
 
 app.get("/", async (c) => {
 
-  const response = await fetch("https://api.jolpi.ca/ergast/f1/2024/constructorstandings/")
-  const data = await response.json() as any
+  // constructors api
 
-  const standingsArray = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings
+  const constructorsApiResponse = await fetch("https://api.jolpi.ca/ergast/f1/2024/constructorstandings/")
+  const data = await constructorsApiResponse.json() as ConstructorStanding_Response
 
+  const constructorStandingsArray = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings
 
-  const constructors: Constructor[] = standingsArray
-    .map((standing: any) => {
-      return {
-        name: standing.Constructor.name,
-        points: standing.points,
-        position: standing.position
-      }
-    })
-
-
-  const separator = "------------------";
-  const formattedStandings = constructors
-    .map((item) => `${separator}\n${item.position}. ${item.name} \n`)
+  const formattedConstructorStandings = constructorStandingsArray
+    .map((constructor) => formatRow(
+      {
+        name: constructor.Constructor.name,
+        position: constructor.position,
+        points: constructor.points
+      }))
     .join('') + separator;
 
+  // drivers api
 
-  return c.text(formattedStandings)
+  const driversApiResponse = await fetch("https://api.jolpi.ca/ergast/f1/2024/driverstandings/")
+  const data1 = await driversApiResponse.json() as DriverStandings_Response
+
+  const driversStandingsArray = data1.MRData.StandingsTable.StandingsLists[0].DriverStandings
+
+  let formattedDriverStandings = driversStandingsArray
+    .map((driver) => formatRow(
+      {
+        name: `${driver.Driver.givenName} ${driver.Driver.familyName}`,
+        points: driver.points,
+        position: driver.position
+      }))
+    .join('') + separator;
+
+  const response = "\n CONSTRUCTORS \n\n" + formattedConstructorStandings + "\n\n DRIVERS \n\n" + formattedDriverStandings + "\n"
+
+  return c.text(response)
 })
 
 
-app.get('/drivers', async (c) => {
-
-  const response = await fetch("https://api.jolpi.ca/ergast/f1/2024/driverstandings/")
-  const data = await response.json() as DriverStandings_Response
-
-  const standingsArray = data.MRData.StandingsTable.StandingsLists[0].DriverStandings
-
-  const separator = "------------------";
-  const formattedStandings = standingsArray
-    .map((item) => `${separator}\n${item.position}. ${item.Driver.givenName} ${item.Driver.familyName} ${item.points} \n`)
-    .join('') + separator;
-
-  return c.text(formattedStandings)
-})
-
-app.route('/book', book)
 export default app
