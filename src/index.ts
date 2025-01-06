@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { ConstructorStanding_Response } from './types/eragst/constructorStandingTypes'
 import { format_Constructors_Standings, format_Drivers_Standings, format_response, separator } from './utils/formatter';
 import { format_side_by_side } from './utils/sideBySide';
+import { foot_note } from './utils/footNote';
 
 const app = new Hono<{ Bindings: CloudflareBindings }>()
 
@@ -36,7 +37,7 @@ app.get("/", async (c) => {
 
   const response = format_side_by_side(formatted_Drivers_Standings, formatted_Constructors_Standings)
 
-  return c.text(response)
+  return c.text(response + foot_note)
 })
 
 
