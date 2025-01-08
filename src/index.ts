@@ -37,7 +37,7 @@ app.get("/", async (c) => {
 
   const response = format_side_by_side(formatted_Drivers_Standings, formatted_Constructors_Standings)
 
-  return c.text("\n You are currently seeing the standings for the 2024 seaason because the 2025 season has not started yet! \n\n" + response + foot_note)
+  return c.text("\n You are currently seeing the standings for the 2024 season because the 2025 season has not started yet! \n\n" + response + foot_note)
 })
 
 
